@@ -11,13 +11,15 @@ import useAuthStore from '../stores/useAuthStore';
 
 // 路由守卫组件
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  const token = useAuthStore((state) => state.token);
+  if (!token) return <Navigate to="/login" />;
+  return <>{children}</>;
 };
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />;
+  const token = useAuthStore((state) => state.token);
+  if (token) return <Navigate to="/dashboard" />;
+  return <>{children}</>;
 };
 
 // 系统路由
@@ -44,7 +46,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />,
+        element: <Navigate to="/dashboard" />,
       },
       {
         path: 'dashboard',

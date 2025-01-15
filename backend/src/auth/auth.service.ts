@@ -57,4 +57,36 @@ export class AuthService {
       user,
     };
   }
+
+  async getCurrentUser(userId: number) {
+    const user = await this.usersService.findOne(userId);
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+
+    // 获取用户的菜单权限
+    const menus = await this.usersService.getUserMenus(userId);
+
+    return {
+      // code: 20000,
+      // data: {
+      //   user: {
+      //     id: user.id,
+      //     username: user.username,
+      //     email: user.email,
+      //     isActive: user.isActive,
+      //     roles: user.roles,
+      //   },
+      //   menus,
+      // },
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        isActive: user.isActive,
+        roles: user.roles,
+      },
+      menus,
+    };
+  }
 } 

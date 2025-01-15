@@ -1,93 +1,104 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Menu } from 'antd';
+import type { MenuProps } from 'antd';
 import {
-  DashboardOutlined,
-  SettingOutlined,
-  MenuOutlined,
-  LogoutOutlined,
+  UserOutlined,
+  VideoCameraOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
-import useAuthStore from '../stores/useAuthStore';
-import type { MenuProps } from 'antd';
+import { useAuthStore } from '../stores/auth';
 
-const { Sider: AntSider } = Layout;
+const { Sider } = Layout;
 
-const StyledSider = styled(AntSider)`
-  .ant-layout-sider-children {
-    height: 100vh;
-    position: fixed;
-    width: 200px;
-  }
-`;
-
-type MenuItem = Required<MenuProps>['items'][number];
-
-const menuItems: MenuItem[] = [
+// 默认菜单配置
+const defaultMenus = [
   {
-    key: 'dashboard',
-    icon: <DashboardOutlined />,
-    label: 'Dashboard',
+    key: '/dashboard',
+    icon: <UserOutlined />,
+    label: '仪表盘',
   },
   {
-    key: 'system',
-    icon: <SettingOutlined />,
+    key: '/system',
+    icon: <VideoCameraOutlined />,
     label: '系统管理',
     children: [
       {
-        key: 'system/menu',
-        icon: <MenuOutlined />,
-        label: '菜单管理',
+        key: '/system/user',
+        label: '用户管理',
       },
       {
-        key: 'system/role',
-        icon: <MenuOutlined />,
+        key: '/system/role',
         label: '角色管理',
       },
       {
-        key: 'system/user',
-        icon: <MenuOutlined />,
-        label: '用户管理',
+        key: '/system/menu',
+        label: '菜单管理',
       },
     ],
   },
-  {
-    key: 'logout',
-    icon: <LogoutOutlined />,
-    label: '退出登录',
-  },
 ];
 
-const Sider: React.FC = () => {
+// 将后端菜单数据转换为 Antd Menu 需要的格式
+const convertMenus = (menus: any[]): MenuProps['items'] => {
+  return menus.map(menu => ({
+    key: menu.path || '',
+    icon: menu.icon ? React.createElement(eval(menu.icon)) : null,
+    label: menu.name,
+    children: menu.children && menu.children.length > 0 ? convertMenus(menu.children) : undefined,
+  }));
+};
+
+const SiderComponent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const selectedKey = location.pathname.split('/')[1] || 'dashboard';
-  const logout = useAuthStore((state) => state.logout);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
+  const { userMenus } = useAuthStore();
 
-  const handleMenuClick = ({ key }: { key: string }) => {
-    if (key === 'logout') {
-      logout();
-      navigate('/login');
-      return;
-    }
-    navigate(`/${key}`);
+  useEffect(() => {
+    // 根据当前路径设置选中的菜单项
+    setSelectedKeys([location.pathname]);
+    // 设置展开的子菜单
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const openMenuKeys = pathSegments.map((_, index) => 
+      '/' + pathSegments.slice(0, index + 1).join('/')
+    );
+    setOpenKeys(openMenuKeys);
+  }, [location.pathname]);
+
+  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
+    navigate(key);
   };
 
+  const handleOpenChange = (keys: string[]) => {
+    setOpenKeys(keys);
+  };
+
+  console.log('userMenus', userMenus)
+
+  // 使用后端返回的菜单数据，如果没有则使用默认菜单
+  const menuItems = userMenus && userMenus.length > 0 
+    ? convertMenus(userMenus) 
+    : defaultMenus;
+
+    console.log('selectedKeys', selectedKeys)
+    console.log('menuItems', menuItems)
+
   return (
-    <StyledSider width={200}>
-      <div style={{ padding: '16px', color: 'white', fontSize: '18px', textAlign: 'center' }}>
-        管理系统
-      </div>
+    <Sider>
+      <div className="logo" />
       <Menu
         theme="dark"
         mode="inline"
-        selectedKeys={[location.pathname.slice(1)]}
-        defaultOpenKeys={['system']}
-        items={menuItems}
+        selectedKeys={selectedKeys}
+        openKeys={openKeys}
+        onOpenChange={handleOpenChange}
         onClick={handleMenuClick}
+        items={menuItems}
       />
-    </StyledSider>
+    </Sider>
   );
 };
 
-export default Sider; 
+export default SiderComponent; 

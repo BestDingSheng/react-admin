@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import useAuthStore from '../../stores/useAuthStore';
+import useAuthStore from '../stores/useAuthStore';
 import type { MenuProps } from 'antd';
 
 const { Sider: AntSider } = Layout;

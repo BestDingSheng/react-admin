@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import Sider from './Sider';
-import useAuthStore from '../../stores/useAuthStore';
+import useAuthStore from '../stores/useAuthStore';
 
 const { Content, Header } = Layout;
 

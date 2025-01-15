@@ -1,10 +1,11 @@
 import { Navigate, RouteObject } from 'react-router-dom';
-import MainLayout from '../components/layout/MainLayout';
+import MainLayout from '../layout/MainLayout';
 import Dashboard from '../pages/dashboard';
 import Login from '../pages/login';
 import Register from '../pages/register';
 import MenuManagement from '../pages/system/MenuManagement';
 import RoleManagement from '../pages/system/RoleManagement';
+import NotFound from '../pages/NotFound';
 // import UserManagement from '../pages/system/UserManagement';
 import useAuthStore from '../stores/useAuthStore';
 
@@ -62,6 +63,10 @@ export const routes: RouteObject[] = [
   {
     path: '/register',
     element: <PublicRoute><Register /></PublicRoute>,
+  },
+  {
+    path: '*',
+    element: <NotFound />,
   },
 ];
 

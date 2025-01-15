@@ -1,32 +1,23 @@
-import request from '../utils/request';
-import { MenuItem } from '../types/menu';
+import request from '@/utils/request';
+import type { ApiResponse } from '@/types/api';
+import type { Menu } from '@/types/menu';
 
-interface ApiResponse<T> {
-  code: number;
-  message: string;
-  result: T;
+export async function getMenus() {
+  return request.get<Menu[]>('/menus');
 }
 
-export const getMenuList = () => {
-  return request<ApiResponse<MenuItem[]>>('/menus').then(res => res.result);
-};
+export async function createMenu(data: Partial<Menu>) {
+  return request.post<Menu>('/menus', data);
+}
 
-export const createMenu = (data: Omit<MenuItem, 'id' | 'createdAt' | 'updatedAt'>) => {
-  return request<ApiResponse<MenuItem>>('/menus', {
-    method: 'POST',
-    data,
-  }).then(res => res.result);
-};
+export async function updateMenu(id: number, data: Partial<Menu>) {
+  return request.put<Menu>(`/menus/${id}`, data);
+}
 
-export const updateMenu = (id: number, data: Partial<MenuItem>) => {
-  return request<ApiResponse<MenuItem>>(`/menus/${id}`, {
-    method: 'PUT',
-    data,
-  }).then(res => res.result);
-};
+export async function deleteMenu(id: number) {
+  return request.delete<null>(`/menus/${id}`);
+}
 
-export const deleteMenu = (id: number) => {
-  return request<ApiResponse<void>>(`/menus/${id}`, {
-    method: 'DELETE',
-  }).then(res => res.result);
-}; 
+export async function getRoleMenus(roleId: number) {
+  return request.get<Menu[]>(`/roles/${roleId}/menus`);
+} 

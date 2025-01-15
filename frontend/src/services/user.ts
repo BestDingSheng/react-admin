@@ -1,22 +1,20 @@
-import request from '../utils/request';
+import request from '@/utils/request';
+import type { ApiResponse } from '@/types/api';
+import type { User } from '@/types/user';
 
-export interface RegisterParams {
+export interface LoginParams {
   username: string;
-  email: string;
   password: string;
 }
 
-export interface UserInfo {
-  id: number;
-  username: string;
-  email: string;
-  isActive: boolean;
+export async function login(data: LoginParams) {
+  return request.post<{ token: string; user: User }>('/auth/login', data);
 }
 
-export const register = (params: RegisterParams) => {
-  return request.post<UserInfo>('/users', params);
-};
+export async function register(data: LoginParams) {
+  return request.post<User>('/auth/register', data);
+}
 
-export const getUserInfo = () => {
-  return request.get<UserInfo>('/auth/profile');
-}; 
+export async function getCurrentUser() {
+  return request.get<User>('/users/current');
+} 

@@ -1,15 +1,14 @@
-export interface MenuItem {
+export interface Menu {
   id: number;
-  name: string;
-  path?: string;
-  icon?: string;
   parentId: number | null;
-  order: number;
-  children?: MenuItem[];
-  status: 'enabled' | 'disabled';
-  type: 'menu' | 'button';
+  name: string;
+  path: string;
   component?: string;
-  permission?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  icon?: string;
+  sort: number;
+  status: boolean;
+  isExternal: boolean;
+  createdAt: string;
+  updatedAt: string;
+  children?: Menu[];
 } 

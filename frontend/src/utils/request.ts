@@ -1,19 +1,26 @@
 import axios from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import { message } from 'antd';
+import type { ApiResponse } from '@/types/api';
 
-const request = axios.create({
+const instance = axios.create({
   baseURL: 'http://localhost:3000/api',
   timeout: 10000,
 });
 
 // 请求拦截器
-request.interceptors.request.use(
+instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth-storage');
     if (token) {
-      const { state } = JSON.parse(token);
-      if (state.token) {
-        config.headers.Authorization = `Bearer ${state.token}`;
+      try {
+        const { state } = JSON.parse(token);
+        if (state.token) {
+          config.headers = config.headers || {};
+          config.headers.Authorization = `Bearer ${state.token}`;
+        }
+      } catch (error) {
+        console.error('Failed to parse auth storage:', error);
       }
     }
     return config;
@@ -24,14 +31,15 @@ request.interceptors.request.use(
 );
 
 // 响应拦截器
-request.interceptors.response.use(
+instance.interceptors.response.use(
   (response) => {
-    const { data } = response;
-    if (data.code === 0) {
+    const data = response.data;
+    if (data.code === 0 || data.code === 200) {
       return data;
     } else {
-      message.error(data.message || '请求失败');
-      return Promise.reject(new Error(data.message || '请求失败'));
+      const errorMessage = data.message || '请求失败';
+      message.error(errorMessage);
+      return Promise.reject(new Error(errorMessage));
     }
   },
   (error) => {
@@ -39,7 +47,8 @@ request.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           message.error('未登录或登录已过期');
-          // 可以在这里处理登录过期的逻辑
+          localStorage.removeItem('auth-storage');
+          window.location.href = '/login';
           break;
         case 403:
           message.error('没有权限访问');
@@ -51,13 +60,29 @@ request.interceptors.response.use(
           message.error('服务器错误');
           break;
         default:
-          message.error(error.response.data.message || '请求失败');
+          message.error(error.response.data?.message || '请求失败');
       }
-    } else {
+    } else if (error.request) {
       message.error('网络错误，请检查网络连接');
+    } else {
+      message.error(error.message || '请求失败');
     }
     return Promise.reject(error);
   }
 );
+
+const request = {
+  get: <T>(url: string, config?: AxiosRequestConfig) => 
+    instance.get<any, ApiResponse<T>>(url, config),
+  
+  post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    instance.post<any, ApiResponse<T>>(url, data, config),
+  
+  put: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    instance.put<any, ApiResponse<T>>(url, data, config),
+  
+  delete: <T>(url: string, config?: AxiosRequestConfig) =>
+    instance.delete<any, ApiResponse<T>>(url, config),
+};
 
 export default request; 

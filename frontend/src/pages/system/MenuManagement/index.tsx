@@ -1,53 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tree, Card, Button, Table, Modal, Form, Input, Select, Space, message, InputNumber } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { MenuItem } from '../../../types/menu';
-import { getMenuList, createMenu, updateMenu, deleteMenu } from '../../../services/menu';
+import { Menu } from '@/types/menu';
+import { getMenus, createMenu, updateMenu, deleteMenu } from '@/services/menu';
 
 const { Option } = Select;
 
 const MenuManagement: React.FC = () => {
-  const [menuList, setMenuList] = useState<MenuItem[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null);
+  const [menuList, setMenuList] = useState<Menu[]>([]);
+  const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-
-  const fetchMenuList = async () => {
-    try {
-      setLoading(true);
-      const data = await getMenuList();
-      setMenuList(data);
-    } catch (error) {
-      message.error('获取菜单列表失败');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchMenuList();
   }, []);
 
-  const handleAdd = () => {
-    setSelectedMenu(null);
-    form.resetFields();
-    setModalVisible(true);
-  };
-
-  const handleEdit = (menu: MenuItem) => {
-    setSelectedMenu(menu);
-    form.setFieldsValue(menu);
-    setModalVisible(true);
-  };
-
-  const handleDelete = async (menu: MenuItem) => {
+  const fetchMenuList = async () => {
     try {
-      await deleteMenu(menu.id);
-      message.success('删除成功');
-      fetchMenuList();
+      setLoading(true);
+      const { result } = await getMenus();
+      setMenuList(Array.isArray(result) ? result : []);
     } catch (error) {
-      message.error('删除失败');
+      message.error('获取菜单列表失败');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,7 +34,8 @@ const MenuManagement: React.FC = () => {
       const values = await form.validateFields();
       const formData = {
         ...values,
-        order: Number(values.order),
+        status: values.status === 'enabled',
+        sort: Number(values.order),
       };
 
       if (selectedMenu) {
@@ -67,14 +46,33 @@ const MenuManagement: React.FC = () => {
         message.success('创建成功');
       }
       setModalVisible(false);
+      form.resetFields();
+      fetchMenuList();
+    } catch (error: any) {
+      if (error?.name !== 'ValidationError') {
+        message.error('操作失败');
+      }
+    }
+  };
+
+  const handleEdit = (menu: Menu) => {
+    setSelectedMenu(menu);
+    form.setFieldsValue(menu);
+    setModalVisible(true);
+  };
+
+  const handleDelete = async (menu: Menu) => {
+    try {
+      await deleteMenu(menu.id);
+      message.success('删除成功');
       fetchMenuList();
     } catch (error) {
-      message.error('操作失败');
+      message.error('删除失败');
     }
   };
 
   const treeData = React.useMemo(() => {
-    const convertToTreeData = (items: MenuItem[]): any[] => {
+    const convertToTreeData = (items: Menu[]): any[] => {
       return items.map(item => ({
         key: item.id,
         title: item.name,
@@ -84,16 +82,14 @@ const MenuManagement: React.FC = () => {
     return convertToTreeData(menuList);
   }, [menuList]);
 
-  const findMenuById = (menus: MenuItem[], id: number): MenuItem | undefined => {
+  const findMenuById = (menus: Menu[], id: number): Menu | undefined => {
     for (const menu of menus) {
       if (menu.id === id) {
         return menu;
       }
       if (menu.children) {
         const found = findMenuById(menu.children, id);
-        if (found) {
-          return found;
-        }
+        if (found) return found;
       }
     }
     return undefined;
@@ -104,7 +100,11 @@ const MenuManagement: React.FC = () => {
       <Card
         title="菜单管理"
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => {
+            setSelectedMenu(null);
+            form.resetFields();
+            setModalVisible(true);
+          }}>
             新增菜单
           </Button>
         }
@@ -164,7 +164,7 @@ const MenuManagement: React.FC = () => {
       <Modal
         title={selectedMenu ? '编辑菜单' : '新增菜单'}
         open={modalVisible}
-        onOk={handleSubmit}
+        onOk={() => handleSubmit()}
         onCancel={() => setModalVisible(false)}
       >
         <Form form={form} layout="vertical">

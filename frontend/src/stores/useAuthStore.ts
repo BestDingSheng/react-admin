@@ -1,24 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import request from '../utils/request';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  isActive: boolean;
-}
-
-interface ApiResponse<T> {
-  code: number;
-  message: string;
-  result: T;
-}
-
-interface LoginResponse {
-  access_token: string;
-  user: User;
-}
+import { login as loginApi } from '@/services/user';
+import type { User } from '@/types/user';
 
 interface AuthState {
   token: string | null;
@@ -37,34 +20,24 @@ const useAuthStore = create<AuthState>()(
 
       login: async (username: string, password: string) => {
         try {
-          const response = await request.post<ApiResponse<LoginResponse>>('/auth/login', {
-            username,
-            password,
-          });
-
-          
-          const { access_token, user } = response.result;
-          
-          // 设置 axios 默认 headers
-          request.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-
-          set({
-            token: access_token,
-            user,
-            isAuthenticated: true,
-          });
-        } catch (error: any) {
-          if (error.response?.data?.message) {
-            throw new Error(error.response.data.message);
+          const { result } = await loginApi({ username, password });
+          if (result && result.token && result.user) {
+            set({
+              token: result.token,
+              user: result.user,
+              isAuthenticated: true,
+            });
+          } else {
+            throw new Error('登录响应数据格式错误');
           }
+        } catch (error: any) {
+          console.error('Login error:', error);
           throw error;
         }
       },
 
       logout: () => {
-        // 清除 axios 默认 headers
-        delete request.defaults.headers.common['Authorization'];
-        
+        localStorage.removeItem('auth-storage');
         set({
           token: null,
           user: null,
@@ -73,7 +46,7 @@ const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'auth-storage', // localStorage 中的 key
+      name: 'auth-storage',
     }
   )
 );

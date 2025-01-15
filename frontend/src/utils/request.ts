@@ -83,6 +83,9 @@ const request = {
   
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
     instance.delete<any, ApiResponse<T>>(url, config),
+    
+  patch: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
+    instance.patch<any, ApiResponse<T>>(url, data, config),
 };
 
 export default request; 

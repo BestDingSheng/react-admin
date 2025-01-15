@@ -21,9 +21,9 @@ const useAuthStore = create<AuthState>()(
       login: async (username: string, password: string) => {
         try {
           const { result } = await loginApi({ username, password });
-          if (result && result.token && result.user) {
+          if (result && result.access_token && result.user) {
             set({
-              token: result.token,
+              token: result.access_token,
               user: result.user,
               isAuthenticated: true,
             });

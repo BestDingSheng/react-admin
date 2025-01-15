@@ -1,8 +1,21 @@
-import { Controller, Get, Post, Body, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { QueryUserDto } from './dto/query-user.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -18,10 +31,15 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOperation({ summary: '获取所有用户' })
-  @ApiResponse({ status: 200, description: '获取成功' })
-  findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  @ApiOperation({ summary: '获取用户列表' })
+  @ApiResponse({ status: 200, description: '获取成功', type: [User] })
+  findAll(@Query() query: QueryUserDto) {
+    const parsedQuery = {
+      ...(query.id ? { id: parseInt(query.id, 10) } : {}),
+      ...(query.username ? { username: query.username } : {}),
+      ...(query.email ? { email: query.email } : {}),
+    };
+    return this.usersService.findAll(parsedQuery);
   }
 
   @Get(':id')
@@ -37,4 +55,18 @@ export class UsersController {
   remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(+id);
   }
-} 
+
+  @Patch(':id')
+  @ApiOperation({ summary: '更新用户' })
+  @ApiResponse({ status: 200, description: '更新成功' })
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(+id, updateUserDto);
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: '更新用户状态' })
+  @ApiResponse({ status: 200, description: '更新成功' })
+  updateStatus(@Param('id') id: string, @Body('isActive') isActive: boolean) {
+    return this.usersService.updateStatus(+id, isActive);
+  }
+}

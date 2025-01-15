@@ -6,7 +6,7 @@ import Register from '../pages/register';
 import MenuManagement from '../pages/system/MenuManagement';
 import RoleManagement from '../pages/system/RoleManagement';
 import NotFound from '../pages/NotFound';
-// import UserManagement from '../pages/system/UserManagement';
+import UserManagement from '../pages/system/UserManagement';
 import useAuthStore from '../stores/useAuthStore';
 
 // 路由守卫组件
@@ -30,10 +30,10 @@ const systemRoutes: RouteObject[] = [
     path: 'role',
     element: <RoleManagement />,
   },
-//   {
-//     path: 'user',
-//     element: <UserManagement />,
-//   },
+  {
+    path: 'user',
+    element: <UserManagement />,
+  },
 ];
 
 // 主路由配置

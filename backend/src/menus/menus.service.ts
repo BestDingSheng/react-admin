@@ -4,6 +4,7 @@ import { TreeRepository } from 'typeorm';
 import { Menu } from './menu.entity';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
+import { BusinessException } from '../common/exceptions/business.exception';
 
 @Injectable()
 export class MenusService {
@@ -117,12 +118,18 @@ export class MenusService {
     });
     
     if (!menu) {
-      throw new NotFoundException(`Menu with ID ${id} not found`);
+      throw new BusinessException({
+        code: 20001,
+        message: '菜单不存在'
+      });
     }
 
     // 检查是否有子菜单
     if (menu.children && menu.children.length > 0) {
-      throw new NotFoundException('无法删除含有子菜单的菜单项');
+      throw new BusinessException({
+        code: 20000,
+        message: '无法删除含有子菜单的菜单项'
+      });
     }
 
     // 直接删除菜单，由于设置了级联删除，会自动处理关联关系

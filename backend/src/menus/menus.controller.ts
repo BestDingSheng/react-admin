@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseFilters } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MenusService } from './menus.service';
 import { Menu } from './menu.entity';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
+import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 
 @ApiTags('menus')
 @Controller('menus')
+@UseFilters(HttpExceptionFilter)
 export class MenusController {
   constructor(private readonly menusService: MenusService) {}
 

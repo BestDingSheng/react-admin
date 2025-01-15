@@ -1,55 +1,36 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Put,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MenusService } from './menus.service';
+import { Menu } from './menu.entity';
 import { CreateMenuDto } from './dto/create-menu.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateMenuDto } from './dto/update-menu.dto';
 
-@ApiTags('菜单管理')
+@ApiTags('menus')
 @Controller('menus')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class MenusController {
   constructor(private readonly menusService: MenusService) {}
 
-  @Post()
-  @ApiOperation({ summary: '创建菜单' })
-  create(@Body() createMenuDto: CreateMenuDto) {
-    return this.menusService.create(createMenuDto);
-  }
-
   @Get()
-  @ApiOperation({ summary: '获取菜单列表' })
-  findAll() {
+  @ApiOperation({ summary: '获取菜单树' })
+  @ApiResponse({ status: 200, description: '获取成功', type: [Menu] })
+  findAll(): Promise<Menu[]> {
     return this.menusService.findAll();
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: '获取单个菜单' })
-  findOne(@Param('id') id: string) {
-    return this.menusService.findOne(+id);
+  @Post()
+  @ApiOperation({ summary: '创建菜单' })
+  @ApiResponse({ status: 201, description: '创建成功', type: Menu })
+  create(@Body() createMenuDto: CreateMenuDto): Promise<Menu> {
+    return this.menusService.create(createMenuDto);
   }
 
   @Put(':id')
   @ApiOperation({ summary: '更新菜单' })
+  @ApiResponse({ status: 200, description: '更新成功', type: Menu })
   update(
     @Param('id') id: string,
-    @Body() updateMenuDto: Partial<CreateMenuDto>,
-  ) {
+    @Body() updateMenuDto: UpdateMenuDto,
+  ): Promise<Menu> {
     return this.menusService.update(+id, updateMenuDto);
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: '删除菜单' })
-  remove(@Param('id') id: string) {
-    return this.menusService.remove(+id);
   }
 }

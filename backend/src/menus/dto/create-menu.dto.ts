@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNumber, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateMenuDto {
   @ApiProperty({ description: '菜单名称' })
@@ -25,21 +25,16 @@ export class CreateMenuDto {
   @IsNumber()
   order: number;
 
-  @ApiProperty({ description: '菜单状态', enum: ['enabled', 'disabled'] })
-  @IsEnum(['enabled', 'disabled'])
-  status: 'enabled' | 'disabled';
+  @ApiProperty({ description: '菜单状态' })
+  @IsBoolean()
+  status: boolean;
 
   @ApiProperty({ description: '菜单类型', enum: ['menu', 'button'] })
-  @IsEnum(['menu', 'button'])
+  @IsString()
   type: 'menu' | 'button';
 
   @ApiProperty({ description: '组件路径', required: false })
   @IsString()
   @IsOptional()
   component?: string;
-
-  @ApiProperty({ description: '权限标识', required: false })
-  @IsString()
-  @IsOptional()
-  permission?: string;
 }

@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Table, Space, Modal, message, Switch } from 'antd';
+import { Card, Form, Input, Button, Table, Space, Modal, message, Switch, Row, Col, Tree } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { getRoles, createRole, updateRole, deleteRole } from '../../../services/role';
-import type { RoleData } from '../../../services/role';
+import type { DataNode } from 'antd/es/tree';
+import { getRoles, createRole, updateRole, deleteRole, updateRoleMenus, getMenus } from '../../../services/role';
+import type { Role } from '../../../types/role';
+import type { Menu } from '../../../types/menu';
+import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 
 const RoleManagement: React.FC = () => {
   const [form] = Form.useForm();
   const [searchForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<RoleData[]>([]);
+  const [data, setData] = useState<Role[]>([]);
+  const [menus, setMenus] = useState<Menu[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<RoleData | null>(null);
+  const [editingRecord, setEditingRecord] = useState<Role | null>(null);
+  const [selectedMenuIds, setSelectedMenuIds] = useState<number[]>([]);
 
   // 获取角色列表
-  const fetchRoles = async (params = {}) => {
+  const fetchRoles = async () => {
     try {
       setLoading(true);
-      const response = await getRoles(params);
+      const response = await getRoles();
       setData(response.result);
     } catch (error: any) {
       message.error(error.message || '获取角色列表失败');
@@ -25,40 +30,63 @@ const RoleManagement: React.FC = () => {
     }
   };
 
+  // 获取菜单列表
+  const fetchMenus = async () => {
+    try {
+      const response = await getMenus();
+      setMenus(response.result);
+    } catch (error: any) {
+      message.error(error.message || '获取菜单列表失败');
+    }
+  };
+
   // 初始加载
   useEffect(() => {
     fetchRoles();
+    fetchMenus();
   }, []);
 
+  // 将菜单数据转换为Tree组件需要的格式
+  const convertMenusToTreeData = (menus: Menu[]): DataNode[] => {
+    return menus.map(menu => ({
+      title: menu.name,
+      key: menu.id,
+      children: menu.children ? convertMenusToTreeData(menu.children) : undefined,
+      disabled: !menu.isActive,
+    }));
+  };
+
   // 表格列定义
-  const columns: ColumnsType<RoleData> = [
+  const columns: ColumnsType<Role> = [
     {
       title: '角色ID',
       dataIndex: 'id',
       key: 'id',
-      width: 100,
+      width: 80,
     },
     {
       title: '角色名称',
-      dataIndex: 'roleName',
-      key: 'roleName',
-      width: 150,
+      dataIndex: 'name',
+      key: 'name',
+      width: 120,
     },
     {
       title: '描述',
       dataIndex: 'description',
       key: 'description',
-      ellipsis: true,
+      width: 200,
     },
     {
       title: '状态',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'isActive',
+      key: 'isActive',
       width: 100,
-      render: (status: boolean, record) => (
+      render: (isActive: boolean) => (
         <Switch
-          checked={status}
-          onChange={(checked) => handleStatusChange(record.id, checked)}
+          checked={isActive}
+          checkedChildren="启用"
+          unCheckedChildren="禁用"
+          disabled
         />
       ),
     },
@@ -91,24 +119,24 @@ const RoleManagement: React.FC = () => {
 
   // 处理搜索
   const handleSearch = async (values: any) => {
-    await fetchRoles(values);
-  };
-
-  // 处理状态变更
-  const handleStatusChange = async (id: number, status: boolean) => {
-    try {
-      await updateRole(id, { status });
-      message.success('状态更新成功');
-      fetchRoles(searchForm.getFieldsValue());
-    } catch (error: any) {
-      message.error(error.message || '状态更新失败');
-    }
+    const params = {
+      ...(values.id ? { id: values.id } : {}),
+      ...(values.name ? { name: values.name } : {}),
+    };
+    await fetchRoles();
   };
 
   // 处理编辑
-  const handleEdit = (record: RoleData) => {
+  const handleEdit = (record: Role) => {
     setEditingRecord(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      name: record.name,
+      description: record.description,
+      isActive: record.isActive,
+    });
+    // 设置已选中的菜单ID
+    const menuIds = record.menus?.map(menu => menu.id) || [];
+    setSelectedMenuIds(menuIds);
     setIsModalVisible(true);
   };
 
@@ -121,7 +149,7 @@ const RoleManagement: React.FC = () => {
         try {
           await deleteRole(id);
           message.success('删除成功');
-          fetchRoles(searchForm.getFieldsValue());
+          fetchRoles();
         } catch (error: any) {
           message.error(error.message || '删除失败');
         }
@@ -133,57 +161,76 @@ const RoleManagement: React.FC = () => {
   const handleSubmit = async (values: any) => {
     try {
       if (editingRecord) {
-        await updateRole(editingRecord.id, values);
+        // 更新角色基本信息
+        await updateRole(editingRecord.id, {
+          name: values.name,
+          description: values.description,
+          isActive: values.isActive,
+        });
+
+        // 更新角色菜单
+        if (values.menuIds && values.menuIds.length > 0) {
+          await updateRoleMenus(editingRecord.id, values.menuIds);
+        }
+
         message.success('更新成功');
-      } else {
-        await createRole(values);
-        message.success('创建成功');
+        setIsModalVisible(false);
+        form.resetFields();
+        setEditingRecord(null);
+        setSelectedMenuIds([]);
+        fetchRoles();
       }
-      setIsModalVisible(false);
-      form.resetFields();
-      setEditingRecord(null);
-      fetchRoles(searchForm.getFieldsValue());
     } catch (error: any) {
-      message.error(error.message || (editingRecord ? '更新失败' : '创建失败'));
+      message.error(error.message || '更新失败');
     }
+  };
+
+  // 处理菜单选择
+  const handleMenuCheck = (checked: number[]) => {
+    setSelectedMenuIds(checked);
   };
 
   return (
     <div className="role-management">
-      {/* 搜索表单 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Form
-          form={searchForm}
-          layout="inline"
-          onFinish={handleSearch}
-        >
-          <Form.Item name="roleId" label="角色ID">
-            <Input placeholder="请输入角色ID" />
-          </Form.Item>
-          <Form.Item name="roleName" label="角色名称">
-            <Input placeholder="请输入角色名称" />
-          </Form.Item>
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit">
-                查询
-              </Button>
-              <Button onClick={() => {
-                searchForm.resetFields();
-                fetchRoles();
-              }}>
-                重置
-              </Button>
-              <Button type="primary" onClick={() => setIsModalVisible(true)}>
-                创建角色
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Card>
-
-      {/* 数据表格 */}
       <Card>
+        <div style={{ marginBottom: 16 }}>
+          <Form
+            form={searchForm}
+            onFinish={handleSearch}
+          >
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} md={8} lg={6}>
+                <Form.Item name="id" label="角色ID">
+                  <Input placeholder="请输入角色ID" allowClear />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12} md={8} lg={6}>
+                <Form.Item name="name" label="角色名称">
+                  <Input placeholder="请输入角色名称" allowClear />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12} md={8} lg={6}>
+                <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
+                  <Space>
+                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+                      查询
+                    </Button>
+                    <Button 
+                      icon={<ReloadOutlined />}
+                      onClick={() => {
+                        searchForm.resetFields();
+                        fetchRoles();
+                      }}
+                    >
+                      重置
+                    </Button>
+                  </Space>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+
         <Table
           columns={columns}
           dataSource={data}
@@ -194,19 +241,21 @@ const RoleManagement: React.FC = () => {
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条`,
           }}
+          scroll={{ x: 1300 }}
         />
       </Card>
 
-      {/* 创建/编辑表单模态框 */}
       <Modal
-        title={editingRecord ? '编辑角色' : '创建角色'}
+        title="编辑角色"
         open={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
           form.resetFields();
           setEditingRecord(null);
+          setSelectedMenuIds([]);
         }}
         footer={null}
+        width={560}
       >
         <Form
           form={form}
@@ -214,7 +263,7 @@ const RoleManagement: React.FC = () => {
           onFinish={handleSubmit}
         >
           <Form.Item
-            name="roleName"
+            name="name"
             label="角色名称"
             rules={[{ required: true, message: '请输入角色名称' }]}
           >
@@ -227,26 +276,46 @@ const RoleManagement: React.FC = () => {
             <Input.TextArea placeholder="请输入描述" />
           </Form.Item>
           <Form.Item
-            name="status"
+            name="menuIds"
+            label="菜单权限"
+            required
+            initialValue={selectedMenuIds}
+          >
+            <Tree
+              checkable
+              treeData={convertMenusToTreeData(menus)}
+              checkedKeys={selectedMenuIds}
+              defaultExpandAll
+              onCheck={(checked) => {
+                handleMenuCheck(checked as number[]);
+                form.setFieldsValue({ menuIds: checked });
+              }}
+            />
+          </Form.Item>
+          <Form.Item
+            name="isActive"
             label="状态"
             valuePropName="checked"
             initialValue={true}
           >
-            <Switch />
+            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
           </Form.Item>
           <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit">
-                {editingRecord ? '更新' : '创建'}
-              </Button>
-              <Button onClick={() => {
-                setIsModalVisible(false);
-                form.resetFields();
-                setEditingRecord(null);
-              }}>
-                取消
-              </Button>
-            </Space>
+            <div style={{ textAlign: 'right' }}>
+              <Space>
+                <Button onClick={() => {
+                  setIsModalVisible(false);
+                  form.resetFields();
+                  setEditingRecord(null);
+                  setSelectedMenuIds([]);
+                }}>
+                  取消
+                </Button>
+                <Button type="primary" htmlType="submit">
+                  更新
+                </Button>
+              </Space>
+            </div>
           </Form.Item>
         </Form>
       </Modal>

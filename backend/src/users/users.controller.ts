@@ -69,4 +69,11 @@ export class UsersController {
   updateStatus(@Param('id') id: string, @Body('isActive') isActive: boolean) {
     return this.usersService.updateStatus(+id, isActive);
   }
+
+  @Get(':id/menus')
+  @ApiOperation({ summary: '获取用户菜单' })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  getUserMenus(@Param('id') id: string) {
+    return this.usersService.getUserMenus(+id);
+  }
 }

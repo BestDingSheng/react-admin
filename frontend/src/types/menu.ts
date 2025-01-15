@@ -1,14 +1,11 @@
 export interface Menu {
   id: number;
-  parentId: number | null;
   name: string;
-  path: string;
-  component?: string;
+  path?: string;
   icon?: string;
+  isActive: boolean;
   sort: number;
-  status: boolean;
-  isExternal: boolean;
+  children?: Menu[];
   createdAt: string;
   updatedAt: string;
-  children?: Menu[];
 } 

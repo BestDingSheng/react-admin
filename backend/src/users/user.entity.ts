@@ -9,6 +9,8 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../roles/role.entity';
+import { Menu } from '../menus/menu.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -25,7 +27,7 @@ export class User {
   email: string;
 
   @Column()
-  @ApiProperty({ description: '密码' })
+  @Exclude()
   password: string;
 
   @Column({ default: true })
@@ -44,4 +46,7 @@ export class User {
   @JoinTable()
   @ApiProperty({ description: '角色列表', type: () => [Role] })
   roles: Role[];
+
+  @ApiProperty({ description: '菜单列表', type: () => [Menu] })
+  menus: Menu[];
 }

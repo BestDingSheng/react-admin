@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Table, Space, Modal, message, Switch, Row, Col, Select } from 'antd';
+import { Card, Form, Input, Button, Table, Space, Modal, message, Switch, Row, Col, Select, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getUsers, updateUser, deleteUser, updateUserStatus } from '../../../services/user';
 import { getRoles } from '../../../services/role';
@@ -69,8 +69,14 @@ const UserManagement: React.FC = () => {
       title: '角色',
       dataIndex: 'roles',
       key: 'roles',
-      width: 150,
-      render: (roles: string[]) => roles?.join(', ') || '-',
+      width: 200,
+      render: (roles: Role[]) => (
+        <Space wrap>
+          {roles?.map(role => (
+            <Tag key={role.id} color="blue">{role.name}</Tag>
+          )) || '-'}
+        </Space>
+      ),
     },
     {
       title: '状态',

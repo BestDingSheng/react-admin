@@ -5,7 +5,7 @@ export class CreateRoleDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ description: '角色名称' })
-  roleName: string;
+  name: string;
 
   @IsString()
   @IsOptional()
@@ -15,5 +15,5 @@ export class CreateRoleDto {
   @IsBoolean()
   @IsOptional()
   @ApiPropertyOptional({ description: '状态', default: true })
-  status?: boolean;
+  isActive?: boolean;
 }

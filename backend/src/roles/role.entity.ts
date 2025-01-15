@@ -4,8 +4,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Menu } from '../menus/menu.entity';
 
 @Entity()
 export class Role {
@@ -24,6 +27,11 @@ export class Role {
   @Column({ default: true })
   @ApiProperty({ description: '是否启用' })
   isActive: boolean;
+
+  @ManyToMany(() => Menu, (menu) => menu.roles)
+  @JoinTable()
+  @ApiProperty({ description: '菜单列表', type: () => [Menu] })
+  menus: Menu[];
 
   @CreateDateColumn()
   @ApiProperty({ description: '创建时间' })

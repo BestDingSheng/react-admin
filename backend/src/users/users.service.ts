@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { User } from './user.entity';
 import { Role } from '../roles/role.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { MenusService } from '../menus/menus.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    private menusService: MenusService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -26,7 +28,7 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  findAll(query?: {
+  async findAll(query?: {
     id?: number;
     username?: string;
     email?: string;
@@ -41,24 +43,47 @@ export class UsersService {
     if (query?.email) {
       where.email = query.email;
     }
-    return this.usersRepository.find({
+
+    const users = await this.usersRepository.find({
       where,
-      relations: ['roles'],
+      relations: ['roles', 'roles.menus'],
     });
+
+    // 为每个用户添加合并后的菜单列表
+    for (const user of users) {
+      const roleIds = user.roles.map((role) => role.id);
+      user.menus = await this.menusService.findUserMenus(roleIds);
+    }
+
+    return users;
   }
 
-  findOne(id: number): Promise<User> {
-    return this.usersRepository.findOne({
+  async findOne(id: number): Promise<User> {
+    const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['roles'],
+      relations: ['roles', 'roles.menus'],
     });
+
+    if (user) {
+      const roleIds = user.roles.map((role) => role.id);
+      user.menus = await this.menusService.findUserMenus(roleIds);
+    }
+
+    return user;
   }
 
-  findByUsername(username: string): Promise<User> {
-    return this.usersRepository.findOne({
+  async findByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOne({
       where: { username },
-      relations: ['roles'],
+      relations: ['roles', 'roles.menus'],
     });
+
+    if (user) {
+      const roleIds = user.roles.map((role) => role.id);
+      user.menus = await this.menusService.findUserMenus(roleIds);
+    }
+
+    return user;
   }
 
   async remove(id: number): Promise<void> {
@@ -71,7 +96,10 @@ export class UsersService {
 
     if (roleIds !== undefined) {
       const user = await this.findOne(id);
-      user.roles = await this.roleRepository.findByIds(roleIds);
+      user.roles = await this.roleRepository.find({
+        where: { id: In(roleIds) },
+        relations: ['menus'],
+      });
       await this.usersRepository.save(user);
     }
 
@@ -81,5 +109,14 @@ export class UsersService {
   async updateStatus(id: number, isActive: boolean): Promise<User> {
     await this.usersRepository.update(id, { isActive });
     return this.findOne(id);
+  }
+
+  async getUserMenus(userId: number): Promise<any[]> {
+    const user = await this.findOne(userId);
+    if (!user || !user.roles.length) {
+      return [];
+    }
+    const roleIds = user.roles.map((role) => role.id);
+    return this.menusService.findUserMenus(roleIds);
   }
 }

@@ -1,6 +1,7 @@
 import request from '@/utils/request';
 import type { ApiResponse } from '@/types/api';
 import type { User } from '@/types/user';
+import type { Role } from '@/types/role';
 
 export interface LoginParams {
   username: string;
@@ -24,7 +25,7 @@ export interface UserData extends User {
   username: string;
   email: string;
   isActive: boolean;
-  roles: string[];
+  roles: Role[];
   createdAt: string;
   updatedAt: string;
 }

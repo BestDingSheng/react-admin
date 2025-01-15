@@ -39,6 +39,16 @@ const menuItems: MenuItem[] = [
         icon: <MenuOutlined />,
         label: '菜单管理',
       },
+      {
+        key: 'system/role',
+        icon: <MenuOutlined />,
+        label: '角色管理',
+      },
+      {
+        key: 'system/user',
+        icon: <MenuOutlined />,
+        label: '用户管理',
+      },
     ],
   },
   {

@@ -1,34 +1,17 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './components/layout/MainLayout';
-import Dashboard from './pages/dashboard';
-import Login from './pages/login';
-import Register from './pages/register';
-import MenuManagement from './pages/system/MenuManagement';
-import useAuthStore from './stores/useAuthStore';
+import { BrowserRouter as Router, useRoutes } from 'react-router-dom';
+import routes from './router';
+
+// 创建一个内部组件来使用 useRoutes
+const AppRoutes: React.FC = () => {
+  const element = useRoutes(routes);
+  return element;
+};
 
 function App() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />} />
-        <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" replace />} />
-        
-        {/* 受保护的路由 */}
-        <Route
-          path="/"
-          element={isAuthenticated ? <MainLayout /> : <Navigate to="/login" replace />}
-        >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          {/* 系统管理路由 */}
-          <Route path="system">
-            <Route path="menu" element={<MenuManagement />} />
-          </Route>
-        </Route>
-      </Routes>
+      <AppRoutes />
     </Router>
   );
 }

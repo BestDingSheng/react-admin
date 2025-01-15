@@ -9,6 +9,12 @@ interface User {
   isActive: boolean;
 }
 
+interface ApiResponse<T> {
+  code: number;
+  message: string;
+  result: T;
+}
+
 interface LoginResponse {
   access_token: string;
   user: User;
@@ -31,12 +37,13 @@ const useAuthStore = create<AuthState>()(
 
       login: async (username: string, password: string) => {
         try {
-          const response = await request.post<LoginResponse>('/auth/login', {
+          const response = await request.post<ApiResponse<LoginResponse>>('/auth/login', {
             username,
             password,
           });
 
-          const { access_token, user } = response.data;
+          
+          const { access_token, user } = response.result;
           
           // 设置 axios 默认 headers
           request.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
@@ -46,7 +53,10 @@ const useAuthStore = create<AuthState>()(
             user,
             isAuthenticated: true,
           });
-        } catch (error) {
+        } catch (error: any) {
+          if (error.response?.data?.message) {
+            throw new Error(error.response.data.message);
+          }
           throw error;
         }
       },

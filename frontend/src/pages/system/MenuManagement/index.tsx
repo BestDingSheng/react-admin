@@ -194,6 +194,7 @@ const MenuManagement: React.FC = () => {
             name="order"
             label="排序"
             rules={[{ required: true, message: '请输入排序号' }]}
+            initialValue={1}
           >
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
@@ -201,6 +202,7 @@ const MenuManagement: React.FC = () => {
             name="type"
             label="类型"
             rules={[{ required: true, message: '请选择类型' }]}
+            initialValue={'menu'}
           >
             <Select>
               <Option value="menu">菜单</Option>
@@ -211,6 +213,7 @@ const MenuManagement: React.FC = () => {
             name="status"
             label="状态"
             rules={[{ required: true, message: '请选择状态' }]}
+            initialValue={'enabled'}
           >
             <Select>
               <Option value="enabled">启用</Option>

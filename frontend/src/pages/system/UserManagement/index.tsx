@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, Table, Space, Modal, message, Switch, Row, Col } from 'antd';
+import { Card, Form, Input, Button, Table, Space, Modal, message, Switch, Row, Col, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getUsers, updateUser, deleteUser, updateUserStatus } from '../../../services/user';
+import { getRoles } from '../../../services/role';
 import type { UserData } from '../../../services/user';
+import type { Role } from '../../../types/role';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 
 const UserManagement: React.FC = () => {
@@ -10,6 +12,7 @@ const UserManagement: React.FC = () => {
   const [searchForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserData[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<UserData | null>(null);
 
@@ -26,9 +29,20 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  // 获取角色列表
+  const fetchRoles = async () => {
+    try {
+      const response = await getRoles();
+      setRoles(response.result);
+    } catch (error: any) {
+      message.error(error.message || '获取角色列表失败');
+    }
+  };
+
   // 初始加载
   useEffect(() => {
     fetchUsers();
+    fetchRoles();
   }, []);
 
   // 表格列定义
@@ -125,7 +139,8 @@ const UserManagement: React.FC = () => {
     setEditingRecord(record);
     form.setFieldsValue({
       email: record.email,
-      isActive: record.isActive
+      isActive: record.isActive,
+      roleIds: record.roles?.map(role => role.id) || []
     });
     setIsModalVisible(true);
   };
@@ -248,6 +263,21 @@ const UserManagement: React.FC = () => {
             ]}
           >
             <Input placeholder="请输入邮箱" />
+          </Form.Item>
+          <Form.Item
+            name="roleIds"
+            label="角色"
+            rules={[{ required: true, message: '请选择角色' }]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="请选择角色"
+              optionFilterProp="label"
+              options={roles.map(role => ({
+                label: role.name,
+                value: role.id,
+              }))}
+            />
           </Form.Item>
           <Form.Item
             name="isActive"

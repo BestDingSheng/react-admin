@@ -1,10 +1,9 @@
 export interface Role {
   id: number;
-  roleName: string;
+  name: string;
   description: string;
   createdAt: string;
   updatedAt: string;
-  status: boolean;
 }
 
 export interface RoleQuery {

@@ -1,5 +1,12 @@
-import { IsOptional, IsEmail, IsBoolean } from 'class-validator';
+import {
+  IsOptional,
+  IsEmail,
+  IsBoolean,
+  IsArray,
+  IsNumber,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -11,4 +18,11 @@ export class UpdateUserDto {
   @IsBoolean()
   @ApiPropertyOptional({ description: '是否启用' })
   isActive?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @Type(() => Number)
+  @ApiPropertyOptional({ description: '角色ID列表', type: [Number] })
+  roleIds?: number[];
 }

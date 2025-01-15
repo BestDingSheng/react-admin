@@ -16,18 +16,19 @@ export class CreateMenuDto {
   @IsOptional()
   icon?: string;
 
-  @ApiProperty({ description: '父级菜单ID', required: false })
+  @ApiProperty({ description: '父级菜单ID', required: false, default: 0 })
   @IsNumber()
   @IsOptional()
-  parentId?: number;
+  parentId: number = 0;
 
   @ApiProperty({ description: '排序号' })
   @IsNumber()
   order: number;
 
-  @ApiProperty({ description: '菜单状态' })
+  @ApiProperty({ description: '菜单状态', default: true })
   @IsBoolean()
-  status: boolean;
+  @IsOptional()
+  status: boolean = true;
 
   @ApiProperty({ description: '菜单类型', enum: ['menu', 'button'] })
   @IsString()

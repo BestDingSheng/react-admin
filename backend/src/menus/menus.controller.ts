@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MenusService } from './menus.service';
 import { Menu } from './menu.entity';
@@ -32,5 +32,12 @@ export class MenusController {
     @Body() updateMenuDto: UpdateMenuDto,
   ): Promise<Menu> {
     return this.menusService.update(+id, updateMenuDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: '删除菜单' })
+  @ApiResponse({ status: 200, description: '删除成功' })
+  async remove(@Param('id') id: string): Promise<void> {
+    return this.menusService.remove(+id);
   }
 }

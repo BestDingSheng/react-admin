@@ -50,15 +50,25 @@ export class MenusService {
       icon: createMenuDto.icon,
       sort: createMenuDto.order,
       isActive: createMenuDto.status,
+      type: createMenuDto.type,
+      component: createMenuDto.component,
+      parentId: createMenuDto.parentId || null,
     });
 
-    if (createMenuDto.parentId) {
+    // 处理父级菜单
+    if (createMenuDto.parentId && createMenuDto.parentId !== 0) {
       const parent = await this.menuRepository.findOne({
         where: { id: createMenuDto.parentId },
       });
       if (parent) {
         menu.parent = parent;
+      } else {
+        throw new NotFoundException(`Parent menu with ID ${createMenuDto.parentId} not found`);
       }
+    } else {
+      // 如果没有选择父级菜单或 parentId 为 0，则设置为顶级菜单
+      menu.parent = null;
+      menu.parentId = null;
     }
 
     return this.menuRepository.save(menu);
@@ -75,24 +85,48 @@ export class MenusService {
     if (updateMenuDto.path !== undefined) menu.path = updateMenuDto.path;
     if (updateMenuDto.icon !== undefined) menu.icon = updateMenuDto.icon;
     if (updateMenuDto.order !== undefined) menu.sort = updateMenuDto.order;
-    if (updateMenuDto.status !== undefined)
-      menu.isActive = updateMenuDto.status;
+    if (updateMenuDto.status !== undefined) menu.isActive = updateMenuDto.status;
+    if (updateMenuDto.type !== undefined) menu.type = updateMenuDto.type;
+    if (updateMenuDto.component !== undefined) menu.component = updateMenuDto.component;
 
     // 更新父级菜单
     if (updateMenuDto.parentId !== undefined) {
-      if (updateMenuDto.parentId === null) {
+      if (updateMenuDto.parentId === 0) {
         menu.parent = null;
+        menu.parentId = null;
       } else {
         const parent = await this.menuRepository.findOne({
           where: { id: updateMenuDto.parentId },
         });
         if (parent) {
           menu.parent = parent;
+          menu.parentId = parent.id;
+        } else {
+          throw new NotFoundException(`Parent menu with ID ${updateMenuDto.parentId} not found`);
         }
       }
     }
 
     return this.menuRepository.save(menu);
+  }
+
+  async remove(id: number): Promise<void> {
+    const menu = await this.menuRepository.findOne({ 
+      where: { id },
+      relations: ['children']
+    });
+    
+    if (!menu) {
+      throw new NotFoundException(`Menu with ID ${id} not found`);
+    }
+
+    // 检查是否有子菜单
+    if (menu.children && menu.children.length > 0) {
+      throw new NotFoundException('无法删除含有子菜单的菜单项');
+    }
+
+    // 直接删除菜单，由于设置了级联删除，会自动处理关联关系
+    await this.menuRepository.remove(menu);
   }
 
   private buildTree(menus: Menu[]): Menu[] {
@@ -104,14 +138,16 @@ export class MenusService {
       // 创建一个新对象，避免修改原始数据
       const menuWithoutRoles = { ...menu };
       delete menuWithoutRoles.roles; // 删除 roles 字段，避免循环引用
+      // 添加 parentId
+      menuWithoutRoles.parentId = menu.parentId || null;
       menuMap.set(menu.id, { ...menuWithoutRoles, children: [] });
     });
 
     // 构建树形结构
     menus.forEach((menu) => {
       const menuWithChildren = menuMap.get(menu.id);
-      if (menu.parent) {
-        const parent = menuMap.get(menu.parent.id);
+      if (menu.parentId) {
+        const parent = menuMap.get(menu.parentId);
         if (parent) {
           parent.children = parent.children || [];
           parent.children.push(menuWithChildren);

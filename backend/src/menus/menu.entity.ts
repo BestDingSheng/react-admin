@@ -8,6 +8,7 @@ import {
   TreeChildren,
   TreeParent,
   ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../roles/role.entity';
@@ -39,13 +40,25 @@ export class Menu {
   @ApiProperty({ description: '排序' })
   sort: number;
 
+  @Column({ type: 'varchar', nullable: true })
+  @ApiProperty({ description: '组件路径' })
+  component: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  @ApiProperty({ description: '菜单类型', enum: ['menu', 'button'] })
+  type: 'menu' | 'button';
+
   @TreeChildren()
   @ApiProperty({ description: '子菜单', type: () => [Menu] })
   children: Menu[];
 
   @TreeParent()
   @ApiProperty({ description: '父菜单', type: () => Menu })
-  parent: Menu;
+  parent: Menu | null;
+
+  @Column({ nullable: true })
+  @ApiProperty({ description: '父级菜单ID' })
+  parentId: number | null;
 
   @CreateDateColumn()
   @ApiProperty({ description: '创建时间' })
@@ -55,7 +68,20 @@ export class Menu {
   @ApiProperty({ description: '更新时间' })
   updatedAt: Date;
 
-  @ManyToMany(() => Role, (role) => role.menus)
+  @ManyToMany(() => Role, (role) => role.menus, {
+    onDelete: 'CASCADE'
+  })
+  @JoinTable({
+    name: 'menu_roles',
+    joinColumn: {
+      name: 'menuId',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'roleId',
+      referencedColumnName: 'id'
+    }
+  })
   @ApiProperty({ description: '角色列表', type: () => [Role] })
   roles: Role[];
 }

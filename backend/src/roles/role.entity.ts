@@ -5,7 +5,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
-  JoinTable,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Menu } from '../menus/menu.entity';
@@ -28,8 +27,9 @@ export class Role {
   @ApiProperty({ description: '是否启用' })
   isActive: boolean;
 
-  @ManyToMany(() => Menu, (menu) => menu.roles)
-  @JoinTable()
+  @ManyToMany(() => Menu, (menu) => menu.roles, {
+    onDelete: 'CASCADE'
+  })
   @ApiProperty({ description: '菜单列表', type: () => [Menu] })
   menus: Menu[];
 

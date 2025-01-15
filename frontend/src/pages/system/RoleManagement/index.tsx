@@ -5,7 +5,7 @@ import type { DataNode } from 'antd/es/tree';
 import { getRoles, createRole, updateRole, deleteRole, updateRoleMenus, getMenus } from '../../../services/role';
 import type { Role } from '../../../types/role';
 import type { Menu } from '../../../types/menu';
-import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined, PlusOutlined } from '@ant-design/icons';
 
 const RoleManagement: React.FC = () => {
   const [form] = Form.useForm();
@@ -56,6 +56,45 @@ const RoleManagement: React.FC = () => {
     }));
   };
 
+  // 显示新增/编辑模态框
+  const showModal = (record?: Role) => {
+    setEditingRecord(record || null);
+    if (record) {
+      form.setFieldsValue(record);
+      setSelectedMenuIds(record.menus?.map(menu => menu.id) || []);
+    } else {
+      form.resetFields();
+      setSelectedMenuIds([]);
+    }
+    setIsModalVisible(true);
+  };
+
+  // 处理模态框确认
+  const handleModalOk = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingRecord) {
+        // 更新角色
+        await updateRole(editingRecord.id, values);
+        if (selectedMenuIds.length > 0) {
+          await updateRoleMenus(editingRecord.id, selectedMenuIds);
+        }
+        message.success('角色更新成功');
+      } else {
+        // 创建角色
+        const response = await createRole(values);
+        if (selectedMenuIds.length > 0) {
+          await updateRoleMenus(response.result.id, selectedMenuIds);
+        }
+        message.success('角色创建成功');
+      }
+      setIsModalVisible(false);
+      fetchRoles();
+    } catch (error: any) {
+      message.error(error.message || '操作失败');
+    }
+  };
+
   // 表格列定义
   const columns: ColumnsType<Role> = [
     {
@@ -98,90 +137,30 @@ const RoleManagement: React.FC = () => {
       render: (date: string) => new Date(date).toLocaleString(),
     },
     {
-      title: '更新时间',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
-      width: 180,
-      render: (date: string) => new Date(date).toLocaleString(),
-    },
-    {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 200,
       render: (_, record) => (
-        <Space size="middle">
-          <Button type="link" onClick={() => handleEdit(record)}>编辑</Button>
-          <Button type="link" danger onClick={() => handleDelete(record.id)}>删除</Button>
+        <Space>
+          <Button type="link" onClick={() => showModal(record)}>
+            编辑
+          </Button>
+          <Button type="link" danger onClick={() => handleDelete(record.id)}>
+            删除
+          </Button>
         </Space>
       ),
     },
   ];
 
-  // 处理搜索
-  const handleSearch = async (values: any) => {
-    const params = {
-      ...(values.id ? { id: values.id } : {}),
-      ...(values.name ? { name: values.name } : {}),
-    };
-    await fetchRoles();
-  };
-
-  // 处理编辑
-  const handleEdit = (record: Role) => {
-    setEditingRecord(record);
-    form.setFieldsValue({
-      name: record.name,
-      description: record.description,
-      isActive: record.isActive,
-    });
-    // 设置已选中的菜单ID
-    const menuIds = record.menus?.map(menu => menu.id) || [];
-    setSelectedMenuIds(menuIds);
-    setIsModalVisible(true);
-  };
-
   // 处理删除
   const handleDelete = async (id: number) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: '确定要删除这个角色吗？',
-      onOk: async () => {
-        try {
-          await deleteRole(id);
-          message.success('删除成功');
-          fetchRoles();
-        } catch (error: any) {
-          message.error(error.message || '删除失败');
-        }
-      },
-    });
-  };
-
-  // 处理表单提交
-  const handleSubmit = async (values: any) => {
     try {
-      if (editingRecord) {
-        // 更新角色基本信息
-        await updateRole(editingRecord.id, {
-          name: values.name,
-          description: values.description,
-          isActive: values.isActive,
-        });
-
-        // 更新角色菜单
-        if (values.menuIds && values.menuIds.length > 0) {
-          await updateRoleMenus(editingRecord.id, values.menuIds);
-        }
-
-        message.success('更新成功');
-        setIsModalVisible(false);
-        form.resetFields();
-        setEditingRecord(null);
-        setSelectedMenuIds([]);
-        fetchRoles();
-      }
+      await deleteRole(id);
+      message.success('删除成功');
+      fetchRoles();
     } catch (error: any) {
-      message.error(error.message || '更新失败');
+      message.error(error.message || '删除失败');
     }
   };
 
@@ -191,46 +170,29 @@ const RoleManagement: React.FC = () => {
   };
 
   return (
-    <div className="role-management">
-      <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Form
-            form={searchForm}
-            onFinish={handleSearch}
-          >
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={12} md={8} lg={6}>
-                <Form.Item name="id" label="角色ID">
-                  <Input placeholder="请输入角色ID" allowClear />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={6}>
-                <Form.Item name="name" label="角色名称">
-                  <Input placeholder="请输入角色名称" allowClear />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12} md={8} lg={6}>
-                <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-                  <Space>
-                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                      查询
-                    </Button>
-                    <Button 
-                      icon={<ReloadOutlined />}
-                      onClick={() => {
-                        searchForm.resetFields();
-                        fetchRoles();
-                      }}
-                    >
-                      重置
-                    </Button>
-                  </Space>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </div>
+    <Card>
+      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        {/* 搜索表单 */}
+        <Form form={searchForm} layout="inline">
+          <Form.Item name="name" label="角色名称">
+            <Input placeholder="请输入角色名称" allowClear />
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <Button type="primary" icon={<SearchOutlined />}>
+                搜索
+              </Button>
+              <Button icon={<ReloadOutlined />} onClick={() => searchForm.resetFields()}>
+                重置
+              </Button>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+                新增角色
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
 
+        {/* 角色列表 */}
         <Table
           columns={columns}
           dataSource={data}
@@ -241,85 +203,42 @@ const RoleManagement: React.FC = () => {
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条`,
           }}
-          scroll={{ x: 1300 }}
         />
-      </Card>
 
-      <Modal
-        title="编辑角色"
-        open={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          form.resetFields();
-          setEditingRecord(null);
-          setSelectedMenuIds([]);
-        }}
-        footer={null}
-        width={560}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
+        {/* 新增/编辑模态框 */}
+        <Modal
+          title={editingRecord ? '编辑角色' : '新增角色'}
+          open={isModalVisible}
+          onOk={handleModalOk}
+          onCancel={() => setIsModalVisible(false)}
+          width={800}
         >
-          <Form.Item
-            name="name"
-            label="角色名称"
-            rules={[{ required: true, message: '请输入角色名称' }]}
-          >
-            <Input placeholder="请输入角色名称" />
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label="描述"
-          >
-            <Input.TextArea placeholder="请输入描述" />
-          </Form.Item>
-          <Form.Item
-            name="menuIds"
-            label="菜单权限"
-            required
-            initialValue={selectedMenuIds}
-          >
-            <Tree
-              checkable
-              treeData={convertMenusToTreeData(menus)}
-              checkedKeys={selectedMenuIds}
-              defaultExpandAll
-              onCheck={(checked) => {
-                handleMenuCheck(checked as number[]);
-                form.setFieldsValue({ menuIds: checked });
-              }}
-            />
-          </Form.Item>
-          <Form.Item
-            name="isActive"
-            label="状态"
-            valuePropName="checked"
-            initialValue={true}
-          >
-            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
-          </Form.Item>
-          <Form.Item>
-            <div style={{ textAlign: 'right' }}>
-              <Space>
-                <Button onClick={() => {
-                  setIsModalVisible(false);
-                  form.resetFields();
-                  setEditingRecord(null);
-                  setSelectedMenuIds([]);
-                }}>
-                  取消
-                </Button>
-                <Button type="primary" htmlType="submit">
-                  更新
-                </Button>
-              </Space>
-            </div>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="name"
+              label="角色名称"
+              rules={[{ required: true, message: '请输入角色名称' }]}
+            >
+              <Input placeholder="请输入角色名称" />
+            </Form.Item>
+            <Form.Item name="description" label="角色描述">
+              <Input.TextArea placeholder="请输入角色描述" />
+            </Form.Item>
+            <Form.Item name="isActive" label="状态" valuePropName="checked" initialValue={true}>
+              <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+            </Form.Item>
+            <Form.Item label="菜单权限">
+              <Tree
+                checkable
+                checkedKeys={selectedMenuIds}
+                onCheck={(checked: any) => handleMenuCheck(checked as number[])}
+                treeData={convertMenusToTreeData(menus)}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Space>
+    </Card>
   );
 };
 

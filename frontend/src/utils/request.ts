@@ -26,7 +26,13 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
-    return response;
+    const { data } = response;
+    if (data.code === 0) {
+      return data;
+    } else {
+      message.error(data.message || '请求失败');
+      return Promise.reject(new Error(data.message || '请求失败'));
+    }
   },
   (error) => {
     if (error.response) {

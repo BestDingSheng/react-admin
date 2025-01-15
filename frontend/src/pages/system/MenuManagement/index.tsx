@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tree, Card, Button, Table, Modal, Form, Input, Select, Space, message } from 'antd';
+import { Tree, Card, Button, Table, Modal, Form, Input, Select, Space, message, InputNumber } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { MenuItem } from '../../../types/menu';
 import { getMenuList, createMenu, updateMenu, deleteMenu } from '../../../services/menu';
@@ -54,11 +54,16 @@ const MenuManagement: React.FC = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      const formData = {
+        ...values,
+        order: Number(values.order),
+      };
+
       if (selectedMenu) {
-        await updateMenu(selectedMenu.id, values);
+        await updateMenu(selectedMenu.id, formData);
         message.success('更新成功');
       } else {
-        await createMenu(values);
+        await createMenu(formData);
         message.success('创建成功');
       }
       setModalVisible(false);
@@ -79,6 +84,21 @@ const MenuManagement: React.FC = () => {
     return convertToTreeData(menuList);
   }, [menuList]);
 
+  const findMenuById = (menus: MenuItem[], id: number): MenuItem | undefined => {
+    for (const menu of menus) {
+      if (menu.id === id) {
+        return menu;
+      }
+      if (menu.children) {
+        const found = findMenuById(menu.children, id);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return undefined;
+  };
+
   return (
     <div style={{ padding: 24 }}>
       <Card
@@ -95,7 +115,7 @@ const MenuManagement: React.FC = () => {
               treeData={treeData}
               defaultExpandAll
               onSelect={(_, { node }) => {
-                const menu = menuList.find(m => m.id === node.key);
+                const menu = findMenuById(menuList, node.key as number);
                 if (menu) setSelectedMenu(menu);
               }}
             />
@@ -175,7 +195,7 @@ const MenuManagement: React.FC = () => {
             label="排序"
             rules={[{ required: true, message: '请输入排序号' }]}
           >
-            <Input type="number" />
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
             name="type"

@@ -35,7 +35,7 @@ const MenuManagement: React.FC = () => {
       const formData = {
         ...values,
         status: values.status === 'enabled',
-        sort: Number(values.order),
+        order: Number(values.order),
       };
 
       if (selectedMenu) {

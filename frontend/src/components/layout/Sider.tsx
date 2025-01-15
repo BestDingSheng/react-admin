@@ -2,16 +2,14 @@ import React from 'react';
 import { Layout, Menu } from 'antd';
 import {
   DashboardOutlined,
-  TableOutlined,
-  FileOutlined,
-  CheckCircleOutlined,
-  WarningOutlined,
-  UserOutlined,
+  SettingOutlined,
+  MenuOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import useAuthStore from '../../stores/useAuthStore';
+import type { MenuProps } from 'antd';
 
 const { Sider: AntSider } = Layout;
 
@@ -23,42 +21,31 @@ const StyledSider = styled(AntSider)`
   }
 `;
 
-const menuItems = [
+type MenuItem = Required<MenuProps>['items'][number];
+
+const menuItems: MenuItem[] = [
   {
     key: 'dashboard',
     icon: <DashboardOutlined />,
     label: 'Dashboard',
   },
-//   {
-//     key: 'form',
-//     icon: <FileOutlined />,
-//     label: '表单页',
-//   },
-//   {
-//     key: 'table',
-//     icon: <TableOutlined />,
-//     label: '列表页',
-//   },
-//   {
-//     key: 'detail',
-//     icon: <CheckCircleOutlined />,
-//     label: '详情页',
-//   },
-//   {
-//     key: 'exception',
-//     icon: <WarningOutlined />,
-//     label: '异常页',
-//   },
-//   {
-//     key: 'profile',
-//     icon: <UserOutlined />,
-//     label: '个人页',
-//   },
-//   {
-//     key: 'logout',
-//     icon: <LogoutOutlined />,
-//     label: '退出登录',
-//   },
+  {
+    key: 'system',
+    icon: <SettingOutlined />,
+    label: '系统管理',
+    children: [
+      {
+        key: 'system/menu',
+        icon: <MenuOutlined />,
+        label: '菜单管理',
+      },
+    ],
+  },
+  {
+    key: 'logout',
+    icon: <LogoutOutlined />,
+    label: '退出登录',
+  },
 ];
 
 const Sider: React.FC = () => {
@@ -84,7 +71,8 @@ const Sider: React.FC = () => {
       <Menu
         theme="dark"
         mode="inline"
-        selectedKeys={[selectedKey]}
+        selectedKeys={[location.pathname.slice(1)]}
+        defaultOpenKeys={['system']}
         items={menuItems}
         onClick={handleMenuClick}
       />

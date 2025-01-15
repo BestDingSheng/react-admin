@@ -4,6 +4,7 @@ import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/dashboard';
 import Login from './pages/login';
 import Register from './pages/register';
+import MenuManagement from './pages/system/MenuManagement';
 import useAuthStore from './stores/useAuthStore';
 
 function App() {
@@ -22,6 +23,10 @@ function App() {
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          {/* 系统管理路由 */}
+          <Route path="system">
+            <Route path="menu" element={<MenuManagement />} />
+          </Route>
         </Route>
       </Routes>
     </Router>

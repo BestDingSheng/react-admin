@@ -96,7 +96,7 @@ const MenuManagement: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
+    <div>
       <Card
         title="菜单管理"
         extra={

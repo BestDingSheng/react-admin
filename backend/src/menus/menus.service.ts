@@ -24,7 +24,7 @@ export class MenusService {
       relations: ['parent'], // 加载父级菜单关系
     });
 
-    console.log('查询到的原始菜单数据:', JSON.stringify(menus, null, 2));
+    // console.log('查询到的原始菜单数据:', JSON.stringify(menus, null, 2));
 
     // 手动构建树形结构
     const result = this.buildTree(menus);

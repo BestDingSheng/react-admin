@@ -19,7 +19,7 @@ const MainLayout: React.FC = () => {
       <Sider />
       <Layout>
         <Header />
-        <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+        <Content style={{ margin: '24px 16px', minHeight: 280 }}>
           <Outlet />
         </Content>
       </Layout>

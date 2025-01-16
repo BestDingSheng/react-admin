@@ -56,16 +56,42 @@ const SiderComponent: React.FC = () => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const { userMenus } = useAuthStore();
 
+  // 获取当前路径的所有父级路径
+  const getParentPaths = (menus: any[], currentPath: string, parentPath = ''): string[] => {
+    let paths: string[] = [];
+    
+    for (const menu of menus) {
+      const fullPath = parentPath + '/' + menu.path?.replace(/^\//, '');
+      
+      if (currentPath.startsWith(fullPath)) {
+        paths.push(fullPath);
+        
+        if (menu.children?.length > 0) {
+          paths = paths.concat(getParentPaths(menu.children, currentPath, fullPath));
+        }
+      }
+    }
+    
+    return paths;
+  };
+
   useEffect(() => {
     // 根据当前路径设置选中的菜单项
     setSelectedKeys([location.pathname]);
-    // 设置展开的子菜单
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    const openMenuKeys = pathSegments.map((_, index) => 
-      '/' + pathSegments.slice(0, index + 1).join('/')
-    );
-    setOpenKeys(openMenuKeys);
-  }, [location.pathname]);
+
+    // 如果有后端菜单数据，使用递归查找父级路径
+    if (userMenus && userMenus.length > 0) {
+      const parentPaths = getParentPaths(userMenus, location.pathname);
+      setOpenKeys(parentPaths);
+    } else {
+      // 使用默认的路径分割方式
+      const pathSegments = location.pathname.split('/').filter(Boolean);
+      const openMenuKeys = pathSegments.map((_, index) => 
+        '/' + pathSegments.slice(0, index + 1).join('/')
+      );
+      setOpenKeys(openMenuKeys);
+    }
+  }, [location.pathname, userMenus]);
 
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     navigate(key);
@@ -75,16 +101,12 @@ const SiderComponent: React.FC = () => {
     setOpenKeys(keys);
   };
 
-  console.log('userMenus', userMenus)
-
   // 使用后端返回的菜单数据，如果没有则使用默认菜单
   const menuItems = userMenus && userMenus.length > 0 
     ? convertMenus(userMenus) 
     : defaultMenus;
 
-    console.log('selectedKeys', selectedKeys)
     console.log('menuItems', menuItems)
-    console.log('openKeys', openKeys)
 
   return (
     <Sider>

@@ -11,7 +11,7 @@
  Target Server Version : 90100 (9.1.0)
  File Encoding         : 65001
 
- Date: 15/01/2025 23:46:42
+ Date: 16/01/2025 18:49:39
 */
 
 SET NAMES utf8mb4;
@@ -23,28 +23,30 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `menu`;
 CREATE TABLE `menu` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `icon` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `isActive` tinyint NOT NULL DEFAULT '1',
   `sort` int NOT NULL DEFAULT '0',
-  `component` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `component` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `parentId` int DEFAULT NULL,
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  `mpath` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '',
+  `mpath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `FK_23ac1b81a7bfb85b14e86bd23a5` (`parentId`),
   CONSTRAINT `FK_23ac1b81a7bfb85b14e86bd23a5` FOREIGN KEY (`parentId`) REFERENCES `menu` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Records of menu
 -- ----------------------------
 BEGIN;
-INSERT INTO `menu` (`id`, `name`, `path`, `icon`, `isActive`, `sort`, `component`, `type`, `parentId`, `createdAt`, `updatedAt`, `mpath`) VALUES (1, '系统管理', 'system/menu', NULL, 1, 1, NULL, 'menu', NULL, '2025-01-15 23:45:30.624968', '2025-01-15 23:45:30.000000', '1.');
-INSERT INTO `menu` (`id`, `name`, `path`, `icon`, `isActive`, `sort`, `component`, `type`, `parentId`, `createdAt`, `updatedAt`, `mpath`) VALUES (2, '菜单管理', 'system/menu', NULL, 1, 1, NULL, 'menu', 1, '2025-01-15 23:45:45.621875', '2025-01-15 23:45:45.000000', '1.2.');
+INSERT INTO `menu` (`id`, `name`, `path`, `icon`, `isActive`, `sort`, `component`, `type`, `parentId`, `createdAt`, `updatedAt`, `mpath`) VALUES (1, '系统管理', '/system', NULL, 1, 1, NULL, 'menu', NULL, '2025-01-15 23:45:30.624968', '2025-01-16 11:40:25.000000', '1.1.1.1.1.1.');
+INSERT INTO `menu` (`id`, `name`, `path`, `icon`, `isActive`, `sort`, `component`, `type`, `parentId`, `createdAt`, `updatedAt`, `mpath`) VALUES (2, '菜单管理', '/system/menu', NULL, 1, 1, NULL, 'menu', 1, '2025-01-15 23:45:45.621875', '2025-01-16 11:40:25.000000', '1.1.1.1.1.1.2.');
+INSERT INTO `menu` (`id`, `name`, `path`, `icon`, `isActive`, `sort`, `component`, `type`, `parentId`, `createdAt`, `updatedAt`, `mpath`) VALUES (3, '用户管理', '/system/user', NULL, 1, 1, NULL, 'menu', 1, '2025-01-16 11:12:30.867781', '2025-01-16 11:40:25.000000', '1.1.1.1.1.1.3.');
+INSERT INTO `menu` (`id`, `name`, `path`, `icon`, `isActive`, `sort`, `component`, `type`, `parentId`, `createdAt`, `updatedAt`, `mpath`) VALUES (4, '角色管理', '/system/role', NULL, 1, 1, NULL, 'menu', 1, '2025-01-16 11:13:03.586940', '2025-01-16 11:40:25.000000', '1.1.1.1.1.1.4.');
 COMMIT;
 
 -- ----------------------------
@@ -67,6 +69,8 @@ CREATE TABLE `menu_roles` (
 BEGIN;
 INSERT INTO `menu_roles` (`menuId`, `roleId`) VALUES (1, 1);
 INSERT INTO `menu_roles` (`menuId`, `roleId`) VALUES (2, 1);
+INSERT INTO `menu_roles` (`menuId`, `roleId`) VALUES (3, 1);
+INSERT INTO `menu_roles` (`menuId`, `roleId`) VALUES (4, 1);
 COMMIT;
 
 -- ----------------------------
@@ -75,15 +79,15 @@ COMMIT;
 DROP TABLE IF EXISTS `menus`;
 CREATE TABLE `menus` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `icon` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `parentId` int DEFAULT NULL,
   `order` int NOT NULL DEFAULT '0',
-  `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'enabled',
-  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'menu',
-  `component` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `permission` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'enabled',
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'menu',
+  `component` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `permission` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`)
@@ -101,8 +105,8 @@ COMMIT;
 DROP TABLE IF EXISTS `role`;
 CREATE TABLE `role` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `isActive` tinyint NOT NULL DEFAULT '1',
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
@@ -123,8 +127,8 @@ COMMIT;
 DROP TABLE IF EXISTS `roles`;
 CREATE TABLE `roles` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `roleName` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `roleName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `status` tinyint NOT NULL DEFAULT '1',
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
@@ -144,9 +148,9 @@ COMMIT;
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `isActive` tinyint NOT NULL DEFAULT '1',
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),

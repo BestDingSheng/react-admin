@@ -84,6 +84,7 @@ const SiderComponent: React.FC = () => {
 
     console.log('selectedKeys', selectedKeys)
     console.log('menuItems', menuItems)
+    console.log('openKeys', openKeys)
 
   return (
     <Sider>

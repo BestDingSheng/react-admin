@@ -1,0 +1,43 @@
+{
+  "javascript": {
+    "formatter": "prettier",
+    "formatterOptions": {
+      "singleQuote": true,
+      "trailingComma": "all",
+      "printWidth": 100,
+      "semi": true,
+      "bracketSpacing": true
+    }
+  },
+  "typescript": {
+    "formatter": "prettier",
+    "formatterOptions": {
+      "singleQuote": true,
+      "trailingComma": "all",
+      "printWidth": 100,
+      "semi": true,
+      "bracketSpacing": true
+    }
+  },
+  "rules": {
+    "frontend/**/*.{ts,tsx}": {
+      "language": "typescript",
+      "linter": "eslint",
+      "formatter": "prettier"
+    },
+    "backend/**/*.ts": {
+      "language": "typescript",
+      "linter": "eslint",
+      "formatter": "prettier"
+    }
+  },
+  "search": {
+    "excludePatterns": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.git/**",
+      "**/build/**",
+      "**/*.log"
+    ]
+  }
+} 

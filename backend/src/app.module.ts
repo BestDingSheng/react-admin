@@ -18,6 +18,8 @@ import { RolesModule } from './roles/roles.module';
       database: 'pc_db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // 仅在开发环境中使用
+      logging: true, // 添加日志
+      logger: 'advanced-console',
     }),
     UsersModule,
     AuthModule,

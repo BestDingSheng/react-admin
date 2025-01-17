@@ -3,10 +3,16 @@ import { persist } from 'zustand/middleware';
 import { login as loginApi, getCurrentUser } from '@/services/user';
 import type { User } from '@/types/user';
 
+interface CurrentUserResponse {
+  user: User;
+  menus: any[];
+}
+
 interface AuthState {
   token: string | null;
   user: User | null;
   userMenus: any[];
+  loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
@@ -18,6 +24,7 @@ const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       userMenus: [],
+      loading: false,
       login: async (username: string, password: string) => {
         try {
           const { result } = await loginApi({ username, password });
@@ -42,14 +49,19 @@ const useAuthStore = create<AuthState>()(
 
       fetchCurrentUser: async () => {
         try {
-          const { result } = await getCurrentUser();
-          if (result) {
-            set({ user: result.user, userMenus: result.menus });
+          set({ loading: true });
+          const response = await getCurrentUser();
+          if (response.result && 'user' in response.result && 'menus' in response.result) {
+            const { user, menus } = response.result as CurrentUserResponse;
+            set({ user, userMenus: menus });
           }
+          
         } catch (error) {
           console.error('Fetch current user error:', error);
           // 如果获取用户信息失败，清除登录状态
           set({ token: null, user: null });
+        } finally {
+          set({ loading: false });
         }
       },
     }),

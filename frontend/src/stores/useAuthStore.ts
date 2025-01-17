@@ -6,6 +6,7 @@ import type { User } from '@/types/user';
 interface AuthState {
   token: string | null;
   user: User | null;
+  userMenus: any[];
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
@@ -16,17 +17,13 @@ const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-
+      userMenus: [],
       login: async (username: string, password: string) => {
         try {
           const { result } = await loginApi({ username, password });
+         
           if (result && result.access_token) {
             set({ token: result.access_token });
-            // 登录后立即获取用户信息
-            const userResponse = await getCurrentUser();
-            if (userResponse.result) {
-              set({ user: userResponse.result });
-            }
           } else {
             throw new Error('登录响应数据格式错误');
           }
@@ -47,7 +44,7 @@ const useAuthStore = create<AuthState>()(
         try {
           const { result } = await getCurrentUser();
           if (result) {
-            set({ user: result });
+            set({ user: result.user, userMenus: result.menus });
           }
         } catch (error) {
           console.error('Fetch current user error:', error);

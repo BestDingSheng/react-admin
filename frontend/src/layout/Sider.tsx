@@ -4,10 +4,9 @@ import type { MenuProps } from 'antd';
 import {
   UserOutlined,
   VideoCameraOutlined,
-  UploadOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../stores/auth';
+import useAuthStore from '../stores/useAuthStore';
 
 const { Sider } = Layout;
 

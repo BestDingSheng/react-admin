@@ -2,7 +2,8 @@ import React from 'react';
 import { Layout, Dropdown } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/auth';
+// import { useAuthStore } from '../stores/auth';
+import useAuthStore from '../stores/useAuthStore';
 
 const { Header } = Layout;
 

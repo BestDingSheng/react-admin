@@ -17,7 +17,7 @@ export async function register(data: LoginParams) {
 }
 
 export async function getCurrentUser() {
-  return request.get<User>('/users/current');
+  return request.get<User>('/auth/current');
 }
 
 export interface UserData extends User {

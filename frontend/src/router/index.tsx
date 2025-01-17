@@ -6,8 +6,10 @@ import Register from '../pages/register';
 import MenuManagement from '../pages/system/MenuManagement';
 import RoleManagement from '../pages/system/RoleManagement';
 import NotFound from '../pages/NotFound';
+import Forbidden from '../pages/403';
 import UserManagement from '../pages/system/UserManagement';
 import useAuthStore from '../stores/useAuthStore';
+import AuthRoute from './AuthRoute';
 
 // 路由守卫组件
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -26,15 +28,15 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 const systemRoutes: RouteObject[] = [
   {
     path: 'menu',
-    element: <MenuManagement />,
+    element: <AuthRoute><MenuManagement /></AuthRoute>,
   },
   {
     path: 'role',
-    element: <RoleManagement />,
+    element: <AuthRoute><RoleManagement /></AuthRoute>,
   },
   {
     path: 'user',
-    element: <UserManagement />,
+    element: <AuthRoute><UserManagement /></AuthRoute>,
   },
 ];
 
@@ -65,6 +67,10 @@ export const routes: RouteObject[] = [
   {
     path: '/register',
     element: <PublicRoute><Register /></PublicRoute>,
+  },
+  {
+    path: '/403',
+    element: <Forbidden />,
   },
   {
     path: '*',

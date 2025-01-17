@@ -45,6 +45,8 @@ export class MenusService {
     // 获取所有角色的菜单
     const menus = await this.menuRepository
       .createQueryBuilder('menu')
+      .leftJoinAndSelect('menu.parent', 'parent') // 加载父菜单关系
+      .leftJoinAndSelect('menu.children', 'children') // 加载子菜单关系
       .innerJoinAndSelect('menu.roles', 'role')
       .where('role.id IN (:...roleIds)', { roleIds })
       .andWhere('menu.isActive = :isActive', { isActive: true })
@@ -55,6 +57,25 @@ export class MenusService {
     const uniqueMenus = Array.from(new Set(menus.map((menu) => menu.id))).map(
       (id) => menus.find((menu) => menu.id === id),
     );
+
+    // 确保所有父菜单都被加载
+    const allMenuIds = new Set<number>();
+    uniqueMenus.forEach((menu) => {
+      allMenuIds.add(menu.id);
+      if (menu.parentId) {
+        allMenuIds.add(menu.parentId);
+      }
+    });
+
+    // 如果有父菜单不在列表中，需要额外加载
+    const missingParentIds = Array.from(allMenuIds).filter(
+      (id) => !uniqueMenus.some((menu) => menu.id === id),
+    );
+
+    if (missingParentIds.length > 0) {
+      const parentMenus = await this.menuRepository.findByIds(missingParentIds);
+      uniqueMenus.push(...parentMenus);
+    }
 
     return this.buildTree(uniqueMenus);
   }
@@ -171,22 +192,34 @@ export class MenusService {
 
     // 创建菜单映射
     menus.forEach((menu) => {
-      menuMap.set(menu.id, { ...menu, children: [] });
+      const menuCopy = { ...menu };
+      menuCopy.children = [];
+      menuMap.set(menu.id, menuCopy);
     });
 
     // 构建树形结构
     menus.forEach((menu) => {
-      if (menu.parentId) {
+      const menuNode = menuMap.get(menu.id);
+      if (menu.parentId && menuMap.has(menu.parentId)) {
         const parent = menuMap.get(menu.parentId);
-        if (parent) {
-          parent.children = parent.children || [];
-          parent.children.push(menuMap.get(menu.id));
-        }
+        parent.children = parent.children || [];
+        parent.children.push(menuNode);
       } else {
-        roots.push(menuMap.get(menu.id));
+        roots.push(menuNode);
       }
     });
 
-    return roots;
+    // 按照 sort 字段排序
+    const sortMenus = (items: Menu[]) => {
+      items.sort((a, b) => (a.sort || 0) - (b.sort || 0));
+      items.forEach((item) => {
+        if (item.children && item.children.length > 0) {
+          sortMenus(item.children);
+        }
+      });
+      return items;
+    };
+
+    return sortMenus(roots);
   }
 }

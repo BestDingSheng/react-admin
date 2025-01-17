@@ -55,6 +55,8 @@ const SiderComponent: React.FC = () => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const { userMenus } = useAuthStore();
 
+  console.log('userMenus', userMenus)
+
   // 获取当前路径的所有父级路径
   const getParentPaths = (menus: any[], currentPath: string, parentPath = ''): string[] => {
     let paths: string[] = [];

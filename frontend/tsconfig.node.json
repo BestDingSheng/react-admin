@@ -1,24 +1,44 @@
 {
   "compilerOptions": {
+    // 启用项目编译，使其可以被其他项目引用
+    "composite": true,
+    // 启用增量编译
+    "incremental": true,
+    // 指定存储增量编译信息的文件位置
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    // 指定ECMAScript目标版本
     "target": "ES2022",
+    // 指定要包含的库文件
     "lib": ["ES2023"],
+    // 指定模块系统
     "module": "ESNext",
+    // 跳过声明文件的类型检查
     "skipLibCheck": true,
 
     /* Bundler mode */
+    // 设置模块解析策略
     "moduleResolution": "bundler",
+    // 允许导入扩展名为.ts的文件
     "allowImportingTsExtensions": true,
+    // 确保每个文件都是一个独立的模块
     "isolatedModules": true,
+    // 强制检测模块格式
     "moduleDetection": "force",
-    "noEmit": true,
+    // 生成声明文件
+    "declaration": true,
+    // 只生成声明文件，不生成js文件
+    "emitDeclarationOnly": true,
 
     /* Linting */
+    // 启用所有严格类型检查选项
     "strict": true,
+    // 报告未使用的局部变量错误
     "noUnusedLocals": true,
+    // 报告未使用的参数错误
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    // 防止switch语句中的case落空
+    "noFallthroughCasesInSwitch": true
   },
+  // 指定要包含的文件
   "include": ["vite.config.ts"]
 }

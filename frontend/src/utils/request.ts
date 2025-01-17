@@ -4,7 +4,7 @@ import { message } from 'antd';
 import type { ApiResponse } from '@/types/api';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: '/api',
   timeout: 10000,
 });
 

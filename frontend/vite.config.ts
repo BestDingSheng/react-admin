@@ -31,7 +31,7 @@ export default defineConfig(({ command, mode }) => {
         '/api': {
           target: env.VITE_API_URL || 'http://localhost:3000',
           changeOrigin: true,
-          rewrite: (!isMock && !keepApiPrefix) ? (path: string) => path.replace(/^\/api/, '') : undefined,
+          // rewrite: (!isMock && !keepApiPrefix) ? (path: string) => path.replace(/^\/api/, '') : undefined,
         },
       },
     },

@@ -3,12 +3,11 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import * as path from 'path'
 import { viteMockServe } from 'vite-plugin-mock'
+import createProxyConfig from './proxy.config.cjs'
 
-// https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const isMock = env.VITE_USE_MOCK === 'true';
-  const keepApiPrefix = env.VITE_KEEP_API_PREFIX === 'true';
   
   return {
     plugins: [
@@ -27,13 +26,7 @@ export default defineConfig(({ command, mode }) => {
     },
     server: {
       port: 5173,
-      proxy: {
-        '/api': {
-          target: env.VITE_API_URL || 'http://localhost:3000',
-          changeOrigin: true,
-          // rewrite: (!isMock && !keepApiPrefix) ? (path: string) => path.replace(/^\/api/, '') : undefined,
-        },
-      },
+      proxy: createProxyConfig(env)
     },
   };
 });

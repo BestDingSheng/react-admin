@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Table, Space, Modal, message, Switch, Row, Col, Tree } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { DataNode } from 'antd/es/tree';
-import { getRoles, createRole, updateRole, deleteRole, updateRoleMenus, getMenus } from '../../../services/role';
-import type { Role } from '../../../types/role';
-import type { Menu } from '../../../types/menu';
+import { getRoles, createRole, updateRole, deleteRole, updateRoleMenus, getMenus } from '@/services/role';
+import type { Role } from '@/types/role';
+import type { Menu } from '@/types/menu';
 import { SearchOutlined, ReloadOutlined, PlusOutlined } from '@ant-design/icons';
+import useAuthStore from '@/stores/useAuthStore';
 
 const RoleManagement: React.FC = () => {
   const [form] = Form.useForm();
@@ -16,6 +17,7 @@ const RoleManagement: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Role | null>(null);
   const [selectedMenuIds, setSelectedMenuIds] = useState<number[]>([]);
+  const { fetchCurrentUser } = useAuthStore();
 
   // 获取角色列表
   const fetchRoles = async () => {
@@ -76,9 +78,6 @@ const RoleManagement: React.FC = () => {
       if (editingRecord) {
         // 更新角色
         await updateRole(editingRecord.id, values);
-        // if (selectedMenuIds.length > 0) {
-        //   await updateRoleMenus(editingRecord.id, selectedMenuIds);
-        // }
         await updateRoleMenus(editingRecord.id, selectedMenuIds);
         message.success('角色更新成功');
       } else {
@@ -90,7 +89,9 @@ const RoleManagement: React.FC = () => {
         message.success('角色创建成功');
       }
       setIsModalVisible(false);
-      fetchRoles();
+      await fetchRoles();
+      // 更新当前用户信息和菜单
+      await fetchCurrentUser();
     } catch (error: any) {
       message.error(error.message || '操作失败');
     }

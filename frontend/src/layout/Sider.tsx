@@ -4,11 +4,33 @@ import type { MenuProps } from 'antd';
 import {
   UserOutlined,
   VideoCameraOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  MenuOutlined,
+  DashboardOutlined,
+  AppstoreOutlined,
+  createFromIconfontCN
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import useAuthStore from '../stores/useAuthStore';
+import useAuthStore from '@/stores/useAuthStore';
 
 const { Sider } = Layout;
+
+// 图标映射
+const IconMap: Record<string, React.ReactNode> = {
+  UserOutlined: <UserOutlined />,
+  VideoCameraOutlined: <VideoCameraOutlined />,
+  SettingOutlined: <SettingOutlined />,
+  TeamOutlined: <TeamOutlined />,
+  MenuOutlined: <MenuOutlined />,
+  DashboardOutlined: <DashboardOutlined />,
+  AppstoreOutlined: <AppstoreOutlined />,
+};
+
+// 动态创建图标组件的函数
+const getIcon = (iconName: string): React.ReactNode | null => {
+  return IconMap[iconName] || null;
+};
 
 // 默认菜单配置
 const defaultMenus = [
@@ -42,7 +64,7 @@ const defaultMenus = [
 const convertMenus = (menus: any[]): MenuProps['items'] => {
   return menus.map(menu => ({
     key: menu.path || '',
-    icon: menu.icon ? React.createElement(eval(menu.icon)) : null,
+    icon: menu.icon ? getIcon(menu.icon) : null,
     label: menu.name,
     children: menu.children && menu.children.length > 0 ? convertMenus(menu.children) : undefined,
   }));

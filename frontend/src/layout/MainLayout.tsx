@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Layout, Spin } from 'antd';
 import { Outlet } from 'react-router-dom';
-import Sider from './Sider';
-import Header from './Header';
-import useAuthStore from '../stores/useAuthStore';
+import Sider from '@/layout/Sider';
+import Header from '@/layout/Header';
+import useAuthStore from '@/stores/useAuthStore';
 
 const { Content } = Layout;
 

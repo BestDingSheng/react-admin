@@ -1,0 +1,38 @@
+# 构建阶段
+FROM node:18-alpine as builder
+
+WORKDIR /app
+
+# 复制 package.json 和 package-lock.json
+COPY package*.json ./
+
+# 安装依赖
+RUN npm ci
+
+# 复制源代码
+COPY . .
+
+# 构建应用
+RUN npm run build
+
+# Nginx 阶段
+FROM nginx:alpine
+
+# 复制 Nginx 配置模板
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
+
+# 复制启动脚本
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# 复制构建产物
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+# 设置默认环境变量
+ENV BACKEND_API_URL=http://localhost:3000
+ENV BACKEND_WS_URL=ws://localhost:3000
+
+# 使用启动脚本
+ENTRYPOINT ["/docker-entrypoint.sh"] 

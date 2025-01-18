@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # Node.js 版本
+  frontend-node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:3000
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  # Nginx 版本
+  frontend-nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 

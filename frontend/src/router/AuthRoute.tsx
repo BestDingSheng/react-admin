@@ -12,6 +12,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children }) => {
 
   // 检查当前路径是否在用户的权限菜单中
   const hasPermission = (path: string) => {
+  
     return userMenus.some(menu => {
       if (menu.path === path) return true;
       // 检查子菜单
@@ -23,9 +24,9 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children }) => {
   };
 
   // 如果用户没有权限访问当前路径，重定向到 403 页面
-  if (!hasPermission(location.pathname)) {
-    return <Navigate to="/403" state={{ from: location }} replace />;
-  }
+  // if (!hasPermission(location.pathname)) {
+  //   return <Navigate to="/403" state={{ from: location }} replace />;
+  // }
 
   return <>{children}</>;
 };

@@ -76,9 +76,10 @@ const RoleManagement: React.FC = () => {
       if (editingRecord) {
         // 更新角色
         await updateRole(editingRecord.id, values);
-        if (selectedMenuIds.length > 0) {
-          await updateRoleMenus(editingRecord.id, selectedMenuIds);
-        }
+        // if (selectedMenuIds.length > 0) {
+        //   await updateRoleMenus(editingRecord.id, selectedMenuIds);
+        // }
+        await updateRoleMenus(editingRecord.id, selectedMenuIds);
         message.success('角色更新成功');
       } else {
         // 创建角色
@@ -231,8 +232,13 @@ const RoleManagement: React.FC = () => {
               <Tree
                 checkable
                 checkedKeys={selectedMenuIds}
-                onCheck={(checked: any) => handleMenuCheck(checked as number[])}
+                onCheck={(checked: any) => {
+                  // 如果是字符串数组，直接使用；如果是 { checked, halfChecked }，使用 checked
+                  const checkedKeys = Array.isArray(checked) ? checked : checked.checked;
+                  setSelectedMenuIds(checkedKeys);
+                }}
                 treeData={convertMenusToTreeData(menus)}
+                defaultExpandAll
               />
             </Form.Item>
           </Form>
